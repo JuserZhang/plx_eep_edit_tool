@@ -1,0 +1,27 @@
+#!/bin/bash 
+
+#该脚本用于检测eeprom image文件是否缺少4字节CRC校验位 和 4字节版本信息位
+#该脚本放在与eeprom image文件相同目录下运行,需配合eep_edit_tool使用，
+#使用时请把eep_edit_tool 复制到/user/bin目录或自己添加所在目录到环境变量，以便系统可以找到该工具
+
+filelist=`/bin/ls $1`
+ERR="Err:This is not a eeprom image file!"
+
+#循环打开操作本目录下所有的文件
+for file in $filelist
+do
+#跳过目录
+    if [ -d "${file}" ] 
+    then
+        continue
+    fi
+    INFO=$(eep_edit_tool ${file} << EOF | sed -n 2p
+quit
+EOF
+)
+#只输出正确eeprom image文件
+    if [ "${INFO}" != "${ERR}" ]
+    then
+        printf "%-50s\t%s\n" "${file}" "${INFO}"
+    fi
+done

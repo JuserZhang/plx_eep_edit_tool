@@ -1,0 +1,46 @@
+#!/bin/bash 
+
+add_version_num=1
+
+filelist=`/bin/ls $1`
+ERR="Err:This is not a eeprom image file!"
+
+eep_image_file_list=()
+i=0
+#循环打开操作本目录下所有的文件
+for file in $filelist
+do
+#跳过目录
+    if [ -d "${file}" ] 
+    then
+        continue
+    fi
+    INFO=$(eep_edit_tool ${file} << EOF | sed -n 2p
+quit
+EOF
+)
+#筛选出eeprom image文件放入数组
+    if [ "${INFO}" != "${ERR}" ]
+    then
+        eep_image_file_list[$i]=${file}
+        let i=i+1
+    fi
+done
+
+for eep_image_file in ${eep_image_file_list[@]}
+do
+    
+    eep_name_part1=${eep_image_file%V*}
+    version_num=${eep_image_file:0-7:3}
+    let version_num=version_num+${add_version_num}
+    eep_name_part2=V${version_num}.bin
+    eep_name=${eep_name_part1}${eep_name_part2}
+    
+    mv ${eep_image_file} ${eep_name}
+    if [ -f "${1}${eep_name}" ]
+    then
+        printf "before: %-50s\tafter: %s\n" ${eep_image_file} ${eep_name}
+    else
+        printf "%-40s\tfail\n" ${eep_image_file}
+    fi
+done
