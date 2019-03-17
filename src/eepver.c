@@ -3,8 +3,8 @@
 #include <string.h>
 #include "eepver.h"
 
-/*ÒÔÏÂÁ½¸öÊı×é±íĞèÒªÓëplxliÖĞµÄ±£³ÖÒ»ÖÂ*/
-eep_serial_number_t eep_serial_number_info []={//Ò»¸ö×Ö½ÚÓĞĞ§
+/*ä»¥ä¸‹ä¸¤ä¸ªæ•°ç»„è¡¨éœ€è¦ä¸plxliä¸­çš„ä¿æŒä¸€è‡´*/
+eep_serial_number_t eep_serial_number_info []={//ä¸€ä¸ªå­—èŠ‚æœ‰æ•ˆ
 		{"07020008",0x01},//MS3000
 		{"07020017",0x02},//MS5000
 		{"07020046",0x03},//MS5500   
@@ -30,7 +30,7 @@ eep_serial_number_t eep_serial_number_info []={//Ò»¸ö×Ö½ÚÓĞĞ§
 		{"07020119",0x17}
 };
 
-eep_version_t eep_version_info []={//Ò»¸ö×Ö½ÚÓĞĞ§
+eep_version_t eep_version_info []={//ä¸€ä¸ªå­—èŠ‚æœ‰æ•ˆ
         {"V100",0x0},
         {"V101",0x1},
 		{"V102",0x2},
@@ -73,7 +73,7 @@ void traversal_eep_version_info()
      }
 }
 
-//³É¹¦ÕÒµ½·µ»Ø1£¬·ñÕß·µ»Ø0
+//æˆåŠŸæ‰¾åˆ°è¿”å›1ï¼Œå¦è€…è¿”å›0
 int get_eep_serial_number(const u32 sn,char *serial_number)
 {
     int size=0;
@@ -108,7 +108,7 @@ int get_eep_version(const u32 ver, char *version)
     return flag;
 }
 
-//³É¹¦·µ»ØÕÒµ½µÄver£¬Ê§°Ü·µ»Ø-1
+//æˆåŠŸè¿”å›æ‰¾åˆ°çš„verï¼Œå¤±è´¥è¿”å›-1
 int get_eep_version_magic(const char *version)
 {
     int size=0;
@@ -192,27 +192,27 @@ void eepwrite32(int fd,u32 offset, u32 val)
     } 
 }
 
-/*°Ñ´«ÈëµÄdword×Ö½Ú°æ±¾ĞÅÏ¢Ğ´ÈëeepromÎÄ¼ş*/
+/*æŠŠä¼ å…¥çš„dwordå­—èŠ‚ç‰ˆæœ¬ä¿¡æ¯å†™å…¥eepromæ–‡ä»¶*/
 void modify_version(int fd,u32 data)
 {
     u32 offset,val,magic;
 
-    magic = (0x5a << 24) | (data & 0xffff); //°Ñ´øÓĞĞòÁĞºÅºÍ°æ±¾ĞÅÏ¢µÄdword¼ÓÉÏ0x5aµ½×î¸ßÒ»¸ö×Ö½ÚÊ¹µÃ°æ±¾ĞÅÏ¢ÉúĞ§
+    magic = (0x5a << 24) | (data & 0xffff); //æŠŠå¸¦æœ‰åºåˆ—å·å’Œç‰ˆæœ¬ä¿¡æ¯çš„dwordåŠ ä¸Š0x5aåˆ°æœ€é«˜ä¸€ä¸ªå­—èŠ‚ä½¿å¾—ç‰ˆæœ¬ä¿¡æ¯ç”Ÿæ•ˆ
         
     offset = get_eep_version_offset(fd);
     if(is_version_divided_two_parts(fd))
     {
-        val = eepread32(fd,offset); //¶ÁÈ¡ĞèÒª¸²¸ÇµÄÊı¾İ
+        val = eepread32(fd,offset); //è¯»å–éœ€è¦è¦†ç›–çš„æ•°æ®
         val &= 0xffff;       
-        val |= (magic & 0xffff) << 16; //È·±£²»»á¸²¸ÇĞ£ÑéÎ»¸ß2byte        
-        eepwrite32(fd,offset,val); //µÚÒ»²¿·ÖĞ´Èë2 byteµÍ×Ö½Ú
+        val |= (magic & 0xffff) << 16; //ç¡®ä¿ä¸ä¼šè¦†ç›–æ ¡éªŒä½é«˜2byte        
+        eepwrite32(fd,offset,val); //ç¬¬ä¸€éƒ¨åˆ†å†™å…¥2 byteä½å­—èŠ‚
 
         offset++;     
  
         val = eepread32(fd,offset);
         val &= 0xffff0000;
         val |= magic >> 16;
-        eepwrite32(fd,offset,val); //µÚ¶ş²¿·ÖĞ´Èë2 byte¸ß×Ö½Ú
+        eepwrite32(fd,offset,val); //ç¬¬äºŒéƒ¨åˆ†å†™å…¥2 byteé«˜å­—èŠ‚
     }
     else
     {
@@ -220,22 +220,22 @@ void modify_version(int fd,u32 data)
     }
 }
 
-/*ÅĞ¶Ï×îºóËÄ×Ö½ÚµÄ°æ±¾ĞÅÏ¢ÊÇ·ñĞèÒª½øĞĞÁ½´Î¶Á/Ğ´*/
+/*åˆ¤æ–­æœ€åå››å­—èŠ‚çš„ç‰ˆæœ¬ä¿¡æ¯æ˜¯å¦éœ€è¦è¿›è¡Œä¸¤æ¬¡è¯»/å†™*/
 int is_version_divided_two_parts(int fd)
 {
     int residue = 0;
     u32 val,eep_image_size; 
 
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16)+8;//ËÄ×Ö½ÚµÄĞ£ÑéÂë£¬ËÄ×Ö½ÚµÄ°æ±¾ĞÅÏ¢£¬¹²°Ë×Ö½Ú
+    eep_image_size= (val >> 16)+8;//å››å­—èŠ‚çš„æ ¡éªŒç ï¼Œå››å­—èŠ‚çš„ç‰ˆæœ¬ä¿¡æ¯ï¼Œå…±å…«å­—èŠ‚
     residue=eep_image_size%4;
     
     return residue;
 }
 
 
-/*¼ÆËãeerpomÎÄ¼ş°æ±¾ĞÅÏ¢µÄÆ«ÒÆ,ÔÚ´ËÖ®Ç°±ØĞëÈ·¶¨×îºóËÄ×Ö½ÚµÄ°æ±¾ĞÅÏ¢ÊÇ·ñĞèÒª½øĞĞÁ½´Î¶Á¡¢Ğ´£¬
- *´Ó¶øÈ·¶¨ĞèÒªÆ«ÒÆÒ»´Î»òÁ½´Î£¬¸Ãº¯Êı×ÜÊÇ·µ»ØµÚÒ»´ÎµÄÆ«ÒÆ*/
+/*è®¡ç®—eerpomæ–‡ä»¶ç‰ˆæœ¬ä¿¡æ¯çš„åç§»,åœ¨æ­¤ä¹‹å‰å¿…é¡»ç¡®å®šæœ€åå››å­—èŠ‚çš„ç‰ˆæœ¬ä¿¡æ¯æ˜¯å¦éœ€è¦è¿›è¡Œä¸¤æ¬¡è¯»ã€å†™ï¼Œ
+ *ä»è€Œç¡®å®šéœ€è¦åç§»ä¸€æ¬¡æˆ–ä¸¤æ¬¡ï¼Œè¯¥å‡½æ•°æ€»æ˜¯è¿”å›ç¬¬ä¸€æ¬¡çš„åç§»*/
 u32 get_eep_version_offset(int fd)
 {
     int quotient = 0;
@@ -249,7 +249,7 @@ u32 get_eep_version_offset(int fd)
     return offset;
 }
 
-/*¶ÁÈ¡eeprom¾µÏñÎÄ¼şÖĞ×îºóËÄ×Ö½Ú£¬¸Ãdword±£´æÁËËùĞèµÄ°æ±¾ĞÅÏ¢*/
+/*è¯»å–eepromé•œåƒæ–‡ä»¶ä¸­æœ€åå››å­—èŠ‚ï¼Œè¯¥dwordä¿å­˜äº†æ‰€éœ€çš„ç‰ˆæœ¬ä¿¡æ¯*/
 u32 read_version_magic(int fd)
 {
     u32 ver = 0, ver_part1=0, ver_part2=0;
@@ -258,14 +258,14 @@ u32 read_version_magic(int fd)
     offset=get_eep_version_offset(fd);
     if(is_version_divided_two_parts(fd))
     {        
-        val=eepread32(fd,offset);//val×î¸ßÁ½¸ö×Ö½Ú°üº¬°æ±¾ĞÅÏ¢Ò»²¿·Ö
+        val=eepread32(fd,offset);//valæœ€é«˜ä¸¤ä¸ªå­—èŠ‚åŒ…å«ç‰ˆæœ¬ä¿¡æ¯ä¸€éƒ¨åˆ†
         ver_part1 = val >> 16;
         offset++;
-        val=eepread32(fd,offset);//val×îµÍÁ½¸ö×Ö½Ú°üº¬°æ±¾ĞÅÏ¢µÄÁíÒ»²¿·Ö
+        val=eepread32(fd,offset);//valæœ€ä½ä¸¤ä¸ªå­—èŠ‚åŒ…å«ç‰ˆæœ¬ä¿¡æ¯çš„å¦ä¸€éƒ¨åˆ†
         ver_part2 = val & 0xffff;
-        ver = (ver_part2 << 16) | ver_part1;//ºÏ²¢Á½²¿·ÖµÄ°æ±¾ĞÅÏ¢ÎªÒ»¸ödword                      
+        ver = (ver_part2 << 16) | ver_part1;//åˆå¹¶ä¸¤éƒ¨åˆ†çš„ç‰ˆæœ¬ä¿¡æ¯ä¸ºä¸€ä¸ªdword                      
     }
-    else//×îºóÒ»¸ödword×Ö½ÚÖĞ°üº¬ÁË°æ±¾ĞÅÏ¢£¬¿ÉÒ»´Î¶ÁÈ¡Íê¡£
+    else//æœ€åä¸€ä¸ªdwordå­—èŠ‚ä¸­åŒ…å«äº†ç‰ˆæœ¬ä¿¡æ¯ï¼Œå¯ä¸€æ¬¡è¯»å–å®Œã€‚
     {
         ver=eepread32(fd,offset);
     }   
@@ -289,7 +289,7 @@ int  show_version(u32 magic)
     u32 ver,sn,check;
 
     check = ( magic >> 24 );
-    if(0x5a != check)//dwordÖĞ×î¸ßÒ»¸ö×Ö½ÚÎª0x5a±íÊ¾°æ±¾ĞÅÏ¢´æÔÚ
+    if(0x5a != check)//dwordä¸­æœ€é«˜ä¸€ä¸ªå­—èŠ‚ä¸º0x5aè¡¨ç¤ºç‰ˆæœ¬ä¿¡æ¯å­˜åœ¨
     {
         printf("version: NULL\n");
         return -1;
@@ -334,7 +334,7 @@ void show_eep_image_dump(int fd)
             raw_data4 = (val >> 24) & 0xff;          
             printf(" %02x %02x %02x %02x",raw_data1,raw_data2,raw_data3,raw_data4);
         }
-        if((0 < is_version_divided_two_parts(fd)) && (offset > max_offset))//×îºóÁ½¸ö×Ö½Ú
+        if((0 < is_version_divided_two_parts(fd)) && (offset > max_offset))//æœ€åä¸¤ä¸ªå­—èŠ‚
         {
             val=eepread32(fd,offset);
             raw_data1 = val & 0xff;

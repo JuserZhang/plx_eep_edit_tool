@@ -22,7 +22,7 @@ command_t commands[] = {
 };
 
 
-/*ÃüÁîÖ´ĞĞº¯Êı*/
+/*å‘½ä»¤æ‰§è¡Œå‡½æ•°*/
 int com_dump(char *para)
 {
     if(strcmp(para,"")!=0)
@@ -135,8 +135,8 @@ int com_modver(char *para)
          return -1;
      }
     
-    /*½«ÊäÈëµÄserial_numberºÍversionºÏ²¢³ÉÒ»¸ödword£¡*/
-     data = (sn << 8) | ver;     //µÍÁ½¸ö×Ö½ÚÓĞĞ§
+    /*å°†è¾“å…¥çš„serial_numberå’Œversionåˆå¹¶æˆä¸€ä¸ªdwordï¼*/
+     data = (sn << 8) | ver;     //ä½ä¸¤ä¸ªå­—èŠ‚æœ‰æ•ˆ
      modify_version(fd,data);           
      printf("-----------------------------------------------------------\n"); 
      printf("Modified version success!\n");
@@ -203,7 +203,7 @@ int com_dl(char *para)
         return -1;
     } 
    
-   offset=strtoul(para,NULL,10);//½«×Ö·û´®×ª»»³É10½øÖÆÎŞ·ûºÅ³¤ÕûĞÍÊı
+   offset=strtoul(para,NULL,10);//å°†å­—ç¬¦ä¸²è½¬æ¢æˆ10è¿›åˆ¶æ— ç¬¦å·é•¿æ•´å‹æ•°
 
    if(offset>=0 && offset<= eep_image_size/4-1)
     {
@@ -282,7 +282,7 @@ int com_el(char *para)
    }
 
    n=0;
-   p = offset_srt;//ÑéÖ¤offsetÊÇ·ñÎªÊ®½øÖÆÊı×Ö
+   p = offset_srt;//éªŒè¯offsetæ˜¯å¦ä¸ºåè¿›åˆ¶æ•°å­—
    while(*p!='\0')
    {
        if(*p>='0' && *p<='9')
@@ -301,7 +301,7 @@ int com_el(char *para)
 
    n=0;
    p = value_str;
-   while(*p!='\0')//ÑéÖ¤valueÊÇ·ñÎª16½øÖÆÊı×Ö
+   while(*p!='\0')//éªŒè¯valueæ˜¯å¦ä¸º16è¿›åˆ¶æ•°å­—
    {
         if(isxdigit(*p))
         {
@@ -318,8 +318,8 @@ int com_el(char *para)
    }
 
    
-   offset=strtoul(offset_srt,NULL,10);//½«×Ö·û´®×ª»»³É10½øÖÆÎŞ·ûºÅ³¤ÕûĞÍÊı
-   data=strtoul(value_str,NULL,16);//½«×Ö·û´®×ª»»³É16½øÖÆÎŞ·ûºÅ³¤ÕûĞÍÊı  
+   offset=strtoul(offset_srt,NULL,10);//å°†å­—ç¬¦ä¸²è½¬æ¢æˆ10è¿›åˆ¶æ— ç¬¦å·é•¿æ•´å‹æ•°
+   data=strtoul(value_str,NULL,16);//å°†å­—ç¬¦ä¸²è½¬æ¢æˆ16è¿›åˆ¶æ— ç¬¦å·é•¿æ•´å‹æ•°  
 
     if(offset>=0 && offset<= eep_image_size/4-1)
     {

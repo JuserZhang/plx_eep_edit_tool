@@ -71,7 +71,7 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    /*»ñÈ¡ÎÄ¼şµÄ³¤¶È*/
+    /*è·å–æ–‡ä»¶çš„é•¿åº¦*/
 	if(stat(file_name, &fstatus) < 0)
 	{
 		printf("get file size failed\n");
@@ -87,15 +87,15 @@ int main (int argc, char **argv)
     val=eepread32(fd,0);
     eep_image_size= (val >> 16)+8;
 
-    if(fsize == eep_image_size)//°üº¬CRCĞ£ÑéÎ»ºÍ°æ±¾ĞÅÏ¢Î»
+    if(fsize == eep_image_size)//åŒ…å«CRCæ ¡éªŒä½å’Œç‰ˆæœ¬ä¿¡æ¯ä½
     {
         printf("Contains 4 byte CRC and 4 byte version information!\n");
     }
-    else if(fsize == eep_image_size-4)//°üº¬CRCĞ£ÑéÎ»£¬È±ÉÙ°æ±¾ĞÅÏ¢
+    else if(fsize == eep_image_size-4)//åŒ…å«CRCæ ¡éªŒä½ï¼Œç¼ºå°‘ç‰ˆæœ¬ä¿¡æ¯
     {
         printf("Lack of 4 byte version information!\n");
     }
-    else if(fsize == eep_image_size-8)//È±ÉÙCRCĞ£ÑéÎ»£¬È±ÉÙ°æ±¾ĞÅÏ¢
+    else if(fsize == eep_image_size-8)//ç¼ºå°‘CRCæ ¡éªŒä½ï¼Œç¼ºå°‘ç‰ˆæœ¬ä¿¡æ¯
     {
         printf("Lack of 4 byte CRC and 4 byte version information!\n");
     }
@@ -107,7 +107,7 @@ int main (int argc, char **argv)
     }   
     printf(CLOUR_END);
     initialize_readline();    /* Bind our completer. */
-    read_history(NULL); //´ÓÖ¸¶¨µÄÎÄ¼şÖĞ¶ÁÈ¡ÀúÊ·¼ÇÂ¼,Èç¹û²ÎÊıÎªNULLÄ¬ÈÏµÄÎÄ¼şÊÇ£º~/.history
+    read_history(NULL); //ä»æŒ‡å®šçš„æ–‡ä»¶ä¸­è¯»å–å†å²è®°å½•,å¦‚æœå‚æ•°ä¸ºNULLé»˜è®¤çš„æ–‡ä»¶æ˜¯ï¼š~/.history
     show_logo();
     while(1)
     {        
@@ -120,7 +120,7 @@ int main (int argc, char **argv)
          if (*cmd)
          {
              add_history(cmd);
-             write_history(NULL);//½«ÀúÊ·¼ÇÂ¼´æÈëÖ¸¶¨µÄÎÄ¼ş,Èç¹û²ÎÊıÎªNULLÄ¬ÈÏµÄÎÄ¼şÊÇ£º~/.history
+             write_history(NULL);//å°†å†å²è®°å½•å­˜å…¥æŒ‡å®šçš„æ–‡ä»¶,å¦‚æœå‚æ•°ä¸ºNULLé»˜è®¤çš„æ–‡ä»¶æ˜¯ï¼š~/.history
              execute_cmd(cmd);
          }
 

@@ -6,13 +6,13 @@
 extern u32 eep_image_size;
 
 typedef struct eep_serial_number{
-    const char serial_number[NAME_SIZE];  //ÃèÊöeepromÎÄ¼şÊÊÓÃµÄserial_number
-    u32  sn;             //Ğ´ÈëeepromÖĞµÄsn                 
+    const char serial_number[NAME_SIZE];  //æè¿°eepromæ–‡ä»¶é€‚ç”¨çš„serial_number
+    u32  sn;             //å†™å…¥eepromä¸­çš„sn                 
 }eep_serial_number_t;
 
 typedef struct eep_version{
-    const char version[NAME_SIZE];      //ÃèÊöeepromÎÄ¼şµÄ°æ±¾
-    u32  ver_magic;                     //Ğ´ÈëeepromÖĞµÄversion ID                   
+    const char version[NAME_SIZE];      //æè¿°eepromæ–‡ä»¶çš„ç‰ˆæœ¬
+    u32  ver_magic;                     //å†™å…¥eepromä¸­çš„version ID                   
 }eep_version_t;
 
 

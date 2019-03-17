@@ -13,7 +13,6 @@ typedef struct{
     char *doc_desc;   
 }command_t;
 
-//ÃüÁîÖ´ĞĞº¯Êı
 int com_dump(char *para);
 int com_support(char *para);
 int com_modver(char *para);
