@@ -227,7 +227,7 @@ int is_version_divided_two_parts(int fd)
     u32 val,eep_image_size; 
 
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16)+8;//四字节的校验码，四字节的版本信息，共八字节
+    eep_image_size= (val >> 16) + 12;//前面四字节，四字节的校验码，四字节的版本信息，共十二字节
     residue=eep_image_size%4;
     
     return residue;
@@ -242,7 +242,7 @@ u32 get_eep_version_offset(int fd)
     u32 val,eep_image_size,offset; 
     
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16)+8;
+    eep_image_size= (val >> 16) + 12;
     quotient=eep_image_size/4;
     offset=quotient-1;
 

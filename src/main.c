@@ -11,7 +11,7 @@
 *  contact MACROSAN for assistance.                                       
 * --------------------------------------------------------------------------
 *   Date: 2018-12-12
-*   Version: 1.3
+*   Version: 1.4
 *   Author: ZhangPeng
 *******************************************************************************/
 #include <stdio.h>
@@ -85,7 +85,7 @@ int main (int argc, char **argv)
     printf("Open %s(%dB)\n",file_name,fsize);
 
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16)+8;
+    eep_image_size= (val >> 16) + 12;
 
     if(fsize == eep_image_size)//包含CRC校验位和版本信息位
     {
