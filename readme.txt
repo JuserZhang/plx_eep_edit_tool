@@ -28,5 +28,3 @@ quit            退出程序
 
 【批量管理】
 scripts目录下包含了一系列shell脚本，方便快速对eeprom image文件进行批量操作。
-
-作者：宏杉科技 张鹏<zhangpeng@macrosan.com>
