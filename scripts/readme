@@ -1,0 +1,17 @@
+说明：这些脚本可批量管理eeprom image 文件
+
+【脚本说明】
+——————————————————————————————————
+show_eep_version              显示eeprom image文件的版本信息 若无显示NULL（可批量显示）
+add_eep_version               添加eeprom image文件版本信息（可批量添加）
+check_eep_CRC_VER             检测eeprom image文件是否缺失4字节CRC校验位 和 4字节版本信息位（可批量检测）
+update_eep_file_name          更新所有eeprom image 文件名
+——————————————————————————————————
+
+【使用方法】
+——————————————————————————————————
+1. 把脚本放到与需要批量管理的eeprom image文件的相同目录
+2. 这些脚本依赖于eep_edit_tool工具，使用时请把eep_edit_tool复制到/usr/bin 目录下
+3. 运行脚本
+例如：./show_eep_version   或 sh show_eep_version
+——————————————————————————————————
