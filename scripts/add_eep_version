@@ -35,7 +35,7 @@ do
     version_num=${eep_image_file:0-7:3}
 
     let version_num=version_num+${add_version_num}
-    version="V${version_num}"
+    version="${version_num}"
 
     CUR_VER=$(eep_edit_tool ${eep_image_file} << EOF | grep "Current version"
 modver ${sn} ${version}

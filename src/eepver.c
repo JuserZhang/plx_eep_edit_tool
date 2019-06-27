@@ -3,149 +3,6 @@
 #include <string.h>
 #include "eepver.h"
 
-/*以下两个数组表需要与plxli中的保持一致*/
-eep_serial_number_t eep_serial_number_info []={//一个字节有效
-		{"07020008",0x01},//MS3000
-		{"07020017",0x02},//MS5000
-		{"07020046",0x03},//MS5500   
-		{"07020068",0x04},//MS7000
-		{"07020139",0x05},
-		{"07020097",0x06},
-		{"07020140",0x07},
-		{"07020099",0x08},//MS3000G2
-		{"07020171",0x09},//MS3000G2-FT
-		{"07020225",0x0a},//MS7000-Mach
-		{"07020224",0x0b},//MS5500G2
-		{"07020229",0x0c},//MS7000G2
-		{"07020087",0x0d},//PCIex4 Swap
-		{"07020116",0x0e},//PCIex8 Swap 
-		{"07020173",0x0f},//PCIex4 Vnic
-		{"07020164",0x10},//PCIex4 Fabric 
-		{"07020191",0x11},//PCIex4 Switch
-		{"07020024",0x12},
-		{"07020069",0x13},
-		{"07020192",0x14},
-		{"07020019",0x15},
-		{"07020074",0x16},
-		{"07020119",0x17}
-};
-
-eep_version_t eep_version_info []={//一个字节有效
-        {"V100",0x0},
-        {"V101",0x1},
-		{"V102",0x2},
-		{"V103",0x3},
-		{"V104",0x4},
-		{"V105",0x5},
-		{"V106",0x6},
-		{"V107",0x7},
-        {"V108",0x8},
-        {"V109",0x9},
-        {"V110",0xa}
-};
-
-void traversal_eep_serial_number_info()
-{
-    int i,j,size;
-    size = sizeof(eep_serial_number_info)/sizeof(eep_serial_number_t);
-    
-    for(i=0;i<size;)
-    {
-        for(j=0;j< 4&& i<size;j++,i++)
-        {
-            printf("%s ",eep_serial_number_info[i].serial_number);
-        }
-       printf("\n");
-    }
-}
-
-void traversal_eep_version_info()
-{
-     int i,j,size;
-     size = sizeof(eep_version_info)/sizeof(eep_version_t);
-     for(i=0;i<size;)
-     {
-        for(j=0;j<4 && i<size;j++,i++)
-        {
-            printf("%s ",eep_version_info[i].version);
-        }
-        printf("\n");        
-     }
-}
-
-//成功找到返回1，否者返回0
-int get_eep_serial_number(const u32 sn,char *serial_number)
-{
-    int size=0;
-    int i,flag=0;
-    size = sizeof(eep_serial_number_info)/sizeof(eep_serial_number_t);
-    for(i=0;i<size;i++)
-    {
-        if(eep_serial_number_info[i].sn == sn)
-        {
-            strcpy(serial_number,eep_serial_number_info[i].serial_number);
-            flag=1;
-            break;
-        }
-    }
-    return flag;
-}
-
-int get_eep_version(const u32 ver, char *version)
-{
-    int size=0;
-    int i,flag=0;
-    size = sizeof(eep_version_info)/sizeof(eep_version_t);
-    for(i=0;i<size;i++)
-    {
-        if(eep_version_info[i].ver_magic == ver)
-        {
-            strcpy(version,eep_version_info[i].version);
-            flag=1;
-            break;
-        }
-    }
-    return flag;
-}
-
-//成功返回找到的ver，失败返回-1
-int get_eep_version_magic(const char *version)
-{
-    int size=0;
-    int i;
-    int ret=-1;
-    
-    size = sizeof(eep_version_info)/sizeof(eep_version_t);
-    for(i=0;i<size;i++)
-    {
-        if(!strcmp(eep_version_info[i].version, version))
-        {
-            
-            ret = eep_version_info[i].ver_magic;
-            break;
-        }
-    }
-    return ret;
-}
-
-int get_eep_serial_number_magic(const char *serial_number)
-{
-    int size=0;
-    int i;
-    int ret=-1;
-    
-    size = sizeof(eep_serial_number_info)/sizeof(eep_serial_number_t);
-    for(i=0;i<size;i++)
-    {
-        if(!strcmp(eep_serial_number_info[i].serial_number, serial_number))
-        {
-            
-            ret = eep_serial_number_info[i].sn;
-        }
-    }
-    return ret;
-}
-
 u32 eepread32(int fd,u32 offset)
 {
 	unsigned char ch=0;
@@ -192,126 +49,164 @@ void eepwrite32(int fd,u32 offset, u32 val)
     } 
 }
 
-/*把传入的dword字节版本信息写入eeprom文件*/
-void modify_version(int fd,u32 data)
-{
-    u32 offset,val,magic;
-
-    magic = (0x5a << 24) | (data & 0xffff); //把带有序列号和版本信息的dword加上0x5a到最高一个字节使得版本信息生效
-        
-    offset = get_eep_version_offset(fd);
-    if(is_version_divided_two_parts(fd))
-    {
-        val = eepread32(fd,offset); //读取需要覆盖的数据
-        val &= 0xffff;       
-        val |= (magic & 0xffff) << 16; //确保不会覆盖校验位高2byte        
-        eepwrite32(fd,offset,val); //第一部分写入2 byte低字节
-
-        offset++;     
- 
-        val = eepread32(fd,offset);
-        val &= 0xffff0000;
-        val |= magic >> 16;
-        eepwrite32(fd,offset,val); //第二部分写入2 byte高字节
-    }
-    else
-    {
-         eepwrite32(fd,offset,magic);
-    }
-}
-
-/*判断最后四字节的版本信息是否需要进行两次读/写*/
-int is_version_divided_two_parts(int fd)
+//判断eep文件大小是否是4的整数倍
+int is_data_size_multiple_of_four(int fd)
 {
     int residue = 0;
     u32 val,eep_image_size; 
 
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16) + 12;//前面四字节，四字节的校验码，四字节的版本信息，共十二字节
+    eep_image_size= (val >> 16) + 10 + ver_len;
     residue=eep_image_size%4;
     
     return residue;
 }
-
 
 /*计算eerpom文件版本信息的偏移,在此之前必须确定最后四字节的版本信息是否需要进行两次读、写，
  *从而确定需要偏移一次或两次，该函数总是返回第一次的偏移*/
 u32 get_eep_version_offset(int fd)
 {
     int quotient = 0;
-    u32 val,eep_image_size,offset; 
+    u32 val,eep_size,offset; 
     
     val=eepread32(fd,0);
-    eep_image_size= (val >> 16) + 12;
-    quotient=eep_image_size/4;
-    offset=quotient-1;
+    eep_size= (val >> 16) + 8 + 2 + ver_len;
+    quotient=eep_size/4;
+    offset=quotient-2;
 
     return offset;
 }
 
-/*读取eeprom镜像文件中最后四字节，该dword保存了所需的版本信息*/
-u32 read_version_magic(int fd)
+/*把传入的版本信息和序列号写入eeprom文件*/
+void modify_version(int fd, u64 sn, u32 ver)
 {
-    u32 ver = 0, ver_part1=0, ver_part2=0;
-    u32 val,offset;  
-    
-    offset=get_eep_version_offset(fd);
-    if(is_version_divided_two_parts(fd))
-    {        
-        val=eepread32(fd,offset);//val最高两个字节包含版本信息一部分
-        ver_part1 = val >> 16;
-        offset++;
-        val=eepread32(fd,offset);//val最低两个字节包含版本信息的另一部分
-        ver_part2 = val & 0xffff;
-        ver = (ver_part2 << 16) | ver_part1;//合并两部分的版本信息为一个dword                      
-    }
-    else//最后一个dword字节中包含了版本信息，可一次读取完。
-    {
-        ver=eepread32(fd,offset);
-    }   
+    u32 offset,val;
+    u32 a,b,c,d;
+    u32 data;
 
-    return ver;
+    offset = get_eep_version_offset(fd);
+
+    if(6 == ver_len )
+    {   
+        if(0 != is_data_size_multiple_of_four(fd))//不能被4整除
+        {
+            val = eepread32(fd,offset); //读取需要覆盖的数据
+        
+            a = val & 0xff;
+            b = (val >> 8) & 0xff;
+            c = 0x5a;
+            d = ver_len; 
+            data = (d << 24) | (c << 16) | (b << 8) | a;             
+            eepwrite32(fd,offset,data); //第一次写入 5a06
+            offset++;     
+ 
+            a = (ver >> 8) & 0xff;
+            b = ver & 0xff;
+            c = (sn >> 24) & 0xff;
+            d = (sn >> 16) & 0xff;
+            data = (d << 24) | (c << 16) | (b << 8) | a;  
+            eepwrite32(fd,offset,data); //第二次写入 sn前2字节
+            offset++;
+
+            a = (sn >> 8) & 0xff;
+            b = sn & 0xff;
+            data =((b << 8) | a) & 0x00ffff;
+            eepwrite32(fd,offset,data); //第三次写入 sn后2字节   
+        }
+        else
+        {
+            a = 0x5a;
+            b = ver_len;
+            c = (ver >> 8) & 0xff;
+            d = ver & 0xff;
+
+            data = (d << 24) | (c << 16) | (b << 8) | a;  
+            eepwrite32(fd,offset,data);//第一次写入ver
+            offset++; 
+
+            a = (sn >> 24) & 0xff;
+            b = (sn >> 16) & 0xff;
+            c = (sn >> 8) & 0xff;
+            d = sn & 0xff;
+            data = (d << 24) | (c << 16) | (b << 8) | a;  
+            eepwrite32(fd,offset,data);//第二次写入sn
+        }
+    }
+    else
+    {
+        //something to do 
+    }
 }
 
-
-/****************************************************************   
- *      ___ ___ ___ ___ ___ ___ ___ ___    
- *     | 5 | a | x | x |   |   |   |   |
- *     |___|___|___|___|___|___|___|___|
- *     |-------------magic-------------| 
- *     | 1byte | 1byte | 1byte | 1byte |
- *       check  reserve    sn     ver
- *                               
- *****************************************************************/
-int  show_version(u32 magic)
+int read_version(int fd,u32 *ver ,u64 *sn)
 {
-    char serial_number[25]={0},version[25]={0};
-    u32 ver,sn,check;
+    u32 val,offset;  
+    u32 a,b,c,d;    
 
-    check = ( magic >> 24 );
-    if(0x5a != check)//dword中最高一个字节为0x5a表示版本信息存在
+    int flag = 0;
+        
+    if(6 == ver_len)
     {
-        printf("version: NULL\n");
-        return -1;
+        offset=get_eep_version_offset(fd);
+        val=eepread32(fd,offset);
+
+        if(0 != is_data_size_multiple_of_four(fd))
+        {          
+              a = (val >> 16) & 0xff;
+
+              if(0x5a == a)
+              {
+                   offset++;
+                   val=eepread32(fd,offset);
+                   a = val & 0xff;
+                   b = (val >> 8) & 0xff;
+                   
+                   *ver =((a << 8) | b ) & 0xffff;
+
+                   c = (val >> 16) & 0xff;//0x07
+                   d = (val >> 24) & 0xff;//0x02
+                   offset++;
+                   val=eepread32(fd,offset);
+                   a = val & 0xff;//0x02
+                   b = (val >> 8) & 0xff;//0x47
+                   
+                   *sn = c << 24 | d << 16 | a << 8 | b;
+              } 
+              else
+              {
+                   flag = 1;
+              }
+        }
+        else//只需要读取两次
+        {
+             if(0x5a == (val & 0xff))
+             {
+                 a = (val >> 16) & 0xff;//0x01
+                 b = (val >> 24) & 0xff;
+
+                 *ver = ((a << 8) | b) & 0xffff;
+                 offset++;
+                 val = eepread32(fd,offset);
+
+                 a = val & 0xff;//0x07
+                 b = (val >> 8) & 0xff; //0x02
+                 c = (val >> 16) & 0xff;//0x00
+                 d = (val >> 24)& 0xff;//0x69
+
+                 *sn = a << 24 | b << 16 | c << 8 | d;  
+             }
+             else
+             {
+                 flag = 1;
+             }
+        }   
+
     }
-    
-    ver = magic & 0xff;
-    sn = ( magic >> 8 ) & 0xff; 
-    
-    if(1 != get_eep_version(ver, version))
+    else
     {
-        printf("Invalid version\n");
-        return -1;
+         //something to do.
     }
-    
-    if(1 != get_eep_serial_number(sn,serial_number))
-    {    
-        printf("Invalid serial number!\n");
-        return -1;     
-    }
-    
-    printf("version: %s_%s\n",serial_number,version);
-    return 0;
+    return flag;
 }
 
 void show_eep_image_dump(int fd)
@@ -320,7 +215,7 @@ void show_eep_image_dump(int fd)
     int i=0;
     int raw_data1=0,raw_data2=0,raw_data3=0,raw_data4=0;
 
-    max_offset=get_eep_version_offset(fd);
+    max_offset=get_eep_version_offset(fd)+1;
     
     for(offset=0;offset<=max_offset;)
     {
@@ -334,8 +229,14 @@ void show_eep_image_dump(int fd)
             raw_data4 = (val >> 24) & 0xff;          
             printf(" %02x %02x %02x %02x",raw_data1,raw_data2,raw_data3,raw_data4);
         }
-        if((0 < is_version_divided_two_parts(fd)) && (offset > max_offset))//最后两个字节
+        if((0 != is_data_size_multiple_of_four(fd)) && (offset > max_offset))//最后两个字节
         {
+			int eep_size;
+            eep_size = (eepread32(fd, 0) >> 16) + 10 + ver_len;
+            if(eep_size % 16 == 2)
+            {
+                printf("\n%08x:",offset*4);
+            }
             val=eepread32(fd,offset);
             raw_data1 = val & 0xff;
             raw_data2 = (val >> 8) & 0xff;

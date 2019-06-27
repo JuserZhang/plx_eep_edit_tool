@@ -2,6 +2,7 @@
 #define __COMMAND_H
 
 #define u32 unsigned int
+#define u64 unsigned long
 
 extern u32 eep_image_size;
 extern int fd;
@@ -13,8 +14,8 @@ typedef struct{
     char *doc_desc;   
 }command_t;
 
+//ÃüÁîÖ´ĞĞº¯Êı
 int com_dump(char *para);
-int com_support(char *para);
 int com_modver(char *para);
 int com_version(char *para);
 int com_dl(char *para);

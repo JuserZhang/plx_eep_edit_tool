@@ -13,7 +13,6 @@ command_t commands[] = {
   { "el", com_el, "el [offset] [value]","Modify EEPROM file value"},
   { "modver", com_modver, "modver [SN] [version]","Modify EEPROM file version" },
   { "dump", com_dump, "dump","Show EEPROM file raw data format" },
-  { "support", com_support, "support","View the supported versions" },  
   { "version", com_version, "version","Display version infomation" },  
   { "quit", com_quit, "quit","Quit" },
   { "help", com_help, "help", "May I help you?" },
@@ -38,28 +37,12 @@ int com_dump(char *para)
     printf("-----------------------------end---------------------------\n");
 }
 
-int com_support(char *para)
-{
-    if(strcmp(para,"")!=0)
-    {
-        printf(CLOUR_BEGIN,font_red);
-        printf("support:the command takes no arguments\n");
-        printf(CLOUR_END);
-        return -1;
-    } 
-    
-     printf("-----------------------------------------------------------\n"); 
-     printf("supported serial_number:\n");
-     traversal_eep_serial_number_info();
-     printf("\nsupported version:\n");
-     traversal_eep_version_info();
-     printf("-----------------------------------------------------------\n"); 
-     return 0;
-}
 
 int com_modver(char *para)
 {
-    u32 data,sn=0,ver=0;
+    u32 ver=0;
+    u64 sn=0;
+
     char *p=para;
     char serial_number[128],version[128];
     int i=0,j=0,len;
@@ -68,7 +51,7 @@ int com_modver(char *para)
     {
         printf(CLOUR_BEGIN,font_red);
         printf("modver [serial_nameber] [version]\n");
-        printf("For example:modver 07020017 V101\n");
+        printf("For example:modver 07020017 101\n");
         printf(CLOUR_END);
         return -1;
     }
@@ -116,31 +99,14 @@ int com_modver(char *para)
          printf(CLOUR_END);
          return -1;
     }  
-        
-    sn=get_eep_serial_number_magic(serial_number);
-    if(-1 == sn)
-    {   
-         printf(CLOUR_BEGIN,font_red);
-         printf("serial_number is illegal!\n");
-         printf(CLOUR_END);
-         return -1;
-     }
-    
-    ver= get_eep_version_magic(version);
-     if(-1 == ver)
-     {
-         printf(CLOUR_BEGIN,font_red);
-         printf("eeprom version is illegal!\n");
-         printf(CLOUR_END);
-         return -1;
-     }
-    
-    /*将输入的serial_number和version合并成一个dword！*/
-     data = (sn << 8) | ver;     //低两个字节有效
-     modify_version(fd,data);           
+
+     sn = strtoul(serial_number,NULL,16);
+     ver = strtoul(version,NULL,16);
+     modify_version(fd,sn,ver);              
+     
      printf("-----------------------------------------------------------\n"); 
      printf("Modified version success!\n");
-     printf("Current version:%s_%s\n",serial_number,version);
+     printf("Current version:%s_V%s\n",serial_number,version);
      printf("-----------------------------------------------------------\n");   
 
      return 0;
@@ -148,8 +114,8 @@ int com_modver(char *para)
 
 int com_version(char *para)
 {
-    u32 ver;
-    u32 magic,val;
+    u32 ver = 0;
+    u64 sn  = 0;
 
     if(strcmp(para,"")!=0)
     {
@@ -158,13 +124,19 @@ int com_version(char *para)
         printf(CLOUR_END);
         return -1;
     }
-       
-    val=eepread32(fd,0);
-    magic=read_version_magic(fd);
-                  
-    printf("-----------------------------------------------------------\n");            
-    show_version(magic);
-    printf("-----------------------------------------------------------\n");
+
+    if(0 == read_version(fd,&ver,&sn))
+    {             
+        printf("-----------------------------------------------------------\n");            
+        printf("version: %08x_V%x\n",sn,ver);
+        printf("-----------------------------------------------------------\n");
+    }
+    else
+    {
+        printf("-----------------------------------------------------------\n");            
+        printf("The version number is invalid\n");
+        printf("-----------------------------------------------------------\n");
+    }
     return 0;
 }
 

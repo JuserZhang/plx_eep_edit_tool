@@ -10,8 +10,8 @@
 *  concerns, or if the Software License Agreement text file is missing please    
 *  contact MACROSAN for assistance.                                       
 * --------------------------------------------------------------------------
-*   Date: 2018-12-12
-*   Version: 1.4
+*   Date: 2019-06-26
+*   Version: 2.0
 *   Author: ZhangPeng
 *******************************************************************************/
 #include <stdio.h>
@@ -26,7 +26,7 @@
 #include "clour.h"
 
 u32 eep_image_size=0;
-int fd;
+int fd,ver_len = 6;//默认是 2字节ver + 4字节sn
 
 void show_logo()
 {
@@ -53,6 +53,9 @@ int main (int argc, char **argv)
     char *file_name;
     char symbol[30]={0};
     struct stat fstatus;
+
+ //   int len=0;
+
     u32 val,fsize;
 
     if(argc!=2)
@@ -83,27 +86,53 @@ int main (int argc, char **argv)
 	}
     printf(CLOUR_BEGIN,font_yellow);  
     printf("Open %s(%dB)\n",file_name,fsize);
+   
+/*
+//----------------------------------------------------
+    val = eepread32(fd,0);
+    len = ( val >> 16 ) + 8;
+    val = eepread32(fd, len / 4);
 
-    val=eepread32(fd,0);
-    eep_image_size= (val >> 16) + 12;
-
-    if(fsize == eep_image_size)//包含CRC校验位和版本信息位
+    if( 0 != is_data_size_multiple_of_four(fd))
     {
-        printf("Contains 4 byte CRC and 4 byte version information!\n");
-    }
-    else if(fsize == eep_image_size-4)//包含CRC校验位，缺少版本信息
-    {
-        printf("Lack of 4 byte version information!\n");
-    }
-    else if(fsize == eep_image_size-8)//缺少CRC校验位，缺少版本信息
-    {
-        printf("Lack of 4 byte CRC and 4 byte version information!\n");
+        ver_len = ( val >> 24 ) & 0xFF;        
     }
     else
     {
-        printf("Err:This is not a eeprom image file!\n");
-        printf(CLOUR_END);
-        goto err;
+        ver_len = ( val >> 8 ) & 0xFF;
+    }
+    
+    printf("ver_len=%x\n",ver_len);
+
+-------------------------------------------------------
+*/
+    val = eepread32(fd,0);
+    eep_image_size = (val >> 16) + 8 + (2 + ver_len);
+
+    if(fsize == eep_image_size)//包含CRC校验位和版本信息位
+    {
+        printf("Contains 4 byte CRC and %d byte version information!\n",ver_len + 2);
+    }
+    else if(fsize == eep_image_size - (ver_len + 2))//包含CRC校验位，缺少版本信息
+    {  
+        printf("Lack of %d byte version information!\n",ver_len + 2);
+    }
+    else if(fsize == eep_image_size - 8 - (ver_len + 2))//缺少CRC校验位，缺少版本信息
+    {
+        printf("Lack of 4 byte CRC and %d byte version information!\n",ver_len + 2);
+    }
+    else
+    {
+        if(fsize > ((val >> 16)+8))//版本号错乱或不完整
+        {
+            printf("Incorrect or incomplete version number\n");
+        }
+        else
+        {
+            printf("Err:This is not a eeprom image file!\n");
+            printf(CLOUR_END);
+            goto err;
+        }      
     }   
     printf(CLOUR_END);
     initialize_readline();    /* Bind our completer. */
