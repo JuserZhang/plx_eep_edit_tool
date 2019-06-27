@@ -107,6 +107,13 @@ int main (int argc, char **argv)
 -------------------------------------------------------
 */
     val = eepread32(fd,0);
+    //printf("val:%x",val);
+    if(0x5a != (val & 0xff))
+    {
+        printf("Err:This is not a eeprom image file!\n");
+        printf(CLOUR_END);
+        goto err;
+    }
     eep_image_size = (val >> 16) + 8 + (2 + ver_len);
 
     if(fsize == eep_image_size)//包含CRC校验位和版本信息位
