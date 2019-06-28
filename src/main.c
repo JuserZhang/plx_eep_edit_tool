@@ -1,14 +1,14 @@
 /*******************************************************************************
 *   COPYRIGHT (C) 2018 MACROSAN, INC. ALL RIGHTS RESERVED.
 * --------------------------------------------------------------------------
-*  This software embodies materials and concepts which are proprietary and  
-*  confidential to MACROSAN, Inc.                                         
-*  MACROSAN distributes this software to its customers pursuant to the terms 
-*  and conditions of the Software License Agreement contained in the text 
-*  file software. This software can only be utilized if all terms and conditions 
-*  of the Software License Agreement are accepted. If there are any questions, 
-*  concerns, or if the Software License Agreement text file is missing please    
-*  contact MACROSAN for assistance.                                       
+*  This software embodies materials and concepts which are proprietary and
+*  confidential to MACROSAN, Inc.
+*  MACROSAN distributes this software to its customers pursuant to the terms
+*  and conditions of the Software License Agreement contained in the text
+*  file software. This software can only be utilized if all terms and conditions
+*  of the Software License Agreement are accepted. If there are any questions,
+*  concerns, or if the Software License Agreement text file is missing please
+*  contact MACROSAN for assistance.
 * --------------------------------------------------------------------------
 *   Date: 2019-06-26
 *   Version: 2.0
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
        printf("main eep_file\n");
        return 0;
     }
-    
+
     sprintf(symbol,"[%s]>",argv[0]);
     file_name=argv[1];
 
@@ -84,9 +84,9 @@ int main (int argc, char **argv)
 	{
 		fsize = fstatus.st_size;
 	}
-    printf(CLOUR_BEGIN,font_yellow);  
+    printf(CLOUR_BEGIN,font_yellow);
     printf("Open %s(%dB)\n",file_name,fsize);
-   
+
 /*
 //----------------------------------------------------
     val = eepread32(fd,0);
@@ -95,13 +95,13 @@ int main (int argc, char **argv)
 
     if( 0 != is_data_size_multiple_of_four(fd))
     {
-        ver_len = ( val >> 24 ) & 0xFF;        
+        ver_len = ( val >> 24 ) & 0xFF;
     }
     else
     {
         ver_len = ( val >> 8 ) & 0xFF;
     }
-    
+
     printf("ver_len=%x\n",ver_len);
 
 -------------------------------------------------------
@@ -121,10 +121,10 @@ int main (int argc, char **argv)
         printf("Contains 4 byte CRC and %d byte version information!\n",ver_len + 2);
     }
     else if(fsize == eep_image_size - (ver_len + 2))//包含CRC校验位，缺少版本信息
-    {  
+    {
         printf("Lack of %d byte version information!\n",ver_len + 2);
     }
-    else if(fsize == eep_image_size - 8 - (ver_len + 2))//缺少CRC校验位，缺少版本信息
+    else if(fsize == eep_image_size - 4 - (ver_len + 2))//缺少CRC校验位，缺少版本信息
     {
         printf("Lack of 4 byte CRC and %d byte version information!\n",ver_len + 2);
     }
@@ -139,14 +139,14 @@ int main (int argc, char **argv)
             printf("Err:This is not a eeprom image file!\n");
             printf(CLOUR_END);
             goto err;
-        }      
-    }   
+        }
+    }
     printf(CLOUR_END);
     initialize_readline();    /* Bind our completer. */
     read_history(NULL); //从指定的文件中读取历史记录,如果参数为NULL默认的文件是：~/.history
     show_logo();
     while(1)
-    {        
+    {
         line = readline (symbol);
 
         if (!line)
@@ -162,10 +162,10 @@ int main (int argc, char **argv)
 
         free(line);
     }
-    
+
     close(fd);
     return 0;
 err:
 	close(fd);
-	return -1;    
+	return -1;
 }

@@ -8,13 +8,13 @@ extern u32 eep_image_size;
 extern int fd;
 
 typedef struct{
-    char *name;               
-    rl_icpfunc_t *func;       
+    char *name;
+    rl_icpfunc_t *func;
     char *doc_name;
-    char *doc_desc;   
+    char *doc_desc;
 }command_t;
 
-//ÃüÁîÖ´ĞĞº¯Êı
+int com_swc(char *para);
 int com_dump(char *para);
 int com_modver(char *para);
 int com_version(char *para);

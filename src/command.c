@@ -11,9 +11,10 @@
 command_t commands[] = {
   { "dl", com_dl, "dl [offset]","Display EEPROM file value" },
   { "el", com_el, "el [offset] [value]","Modify EEPROM file value"},
+  { "swc", com_swc, "swc [filename]","Save it wihtout crc as filename"},
   { "modver", com_modver, "modver [SN] [version]","Modify EEPROM file version" },
   { "dump", com_dump, "dump","Show EEPROM file raw data format" },
-  { "version", com_version, "version","Display version infomation" },  
+  { "version", com_version, "version","Display version infomation" },
   { "quit", com_quit, "quit","Quit" },
   { "help", com_help, "help", "May I help you?" },
   { "?", com_help, "?","Synonym for `help'" },
@@ -31,12 +32,62 @@ int com_dump(char *para)
         printf(CLOUR_END);
         return -1;
     }
-    
+
     printf("----------------eeprom image raw data format---------------\n");
-    show_eep_image_dump(fd); 
+    show_eep_image_dump(fd);
     printf("-----------------------------end---------------------------\n");
 }
 
+int com_swc(char *para)
+{
+    int fd_tmp, ret, i, quotient = 0, residue = 0;
+    u32 eep_size,buff, progress = 0;
+    char dir_buf[256];
+    char fname[128];
+
+    if(strcmp(para,"")==0)
+    {
+        printf(CLOUR_BEGIN,font_red);
+        printf("Please enter the file name to save as.\n");
+        printf(CLOUR_END);
+        return -1;
+    }
+
+    sprintf(fname,"%s",para);
+
+    //获取当前工作目录
+	getcwd(dir_buf, sizeof(dir_buf));
+	sprintf(dir_buf,"%s/%s",dir_buf,fname);
+
+	fd_tmp = open(dir_buf , O_RDWR|O_NDELAY|O_CREAT|O_EXCL);
+	if(fd_tmp < 0) {
+		printf("File already exist, choose another\n");
+		return 1;
+	}
+    eep_size = (eepread32(fd, 0) >> 16) + 4;
+
+    quotient = eep_size/4;
+	residue  = eep_size%4;
+
+    for(i = 0; i < quotient;i++)
+    {
+		buff = eepread32(fd, i);
+		ret = write(fd_tmp, &buff, 0x4);
+		if(4 != ret)
+			printf("Write file failed-%d\n",i);
+	}
+
+    if(residue)
+    {
+		buff = eepread32(fd, i);
+		ret = write(fd_tmp, &buff, 0x2);
+		if(2 != ret)
+			printf("Write file failed-%d\n",i);
+	}
+    printf("-----------------------------------------------------------\n");
+    printf("Save eeprom to %s(%dB) successful\n",dir_buf,eep_size);
+    printf("-----------------------------------------------------------\n");
+}
 
 int com_modver(char *para)
 {
@@ -46,7 +97,7 @@ int com_modver(char *para)
     char *p=para;
     char serial_number[128],version[128];
     int i=0,j=0,len;
-    
+
     if(strcmp(para,"")==0)
     {
         printf(CLOUR_BEGIN,font_red);
@@ -55,7 +106,7 @@ int com_modver(char *para)
         printf(CLOUR_END);
         return -1;
     }
-   
+
 
    len = strlen(para);
 
@@ -79,7 +130,7 @@ int com_modver(char *para)
         printf(CLOUR_END);
         return -1;
    }
-   
+
    for(j=0;i<len;i++,j++)//version
    {
         if(*p == ' ')
@@ -91,23 +142,23 @@ int com_modver(char *para)
         version[j]=*p;
         p++;
    }
-   
+
     if(i!=len)
     {
          printf(CLOUR_BEGIN,font_red);
          printf("modver:too many parameters\n");
          printf(CLOUR_END);
          return -1;
-    }  
+    }
 
      sn = strtoul(serial_number,NULL,16);
      ver = strtoul(version,NULL,16);
-     modify_version(fd,sn,ver);              
-     
-     printf("-----------------------------------------------------------\n"); 
+     modify_version(fd,sn,ver);
+
+     printf("-----------------------------------------------------------\n");
      printf("Modified version success!\n");
      printf("Current version:%s_V%s\n",serial_number,version);
-     printf("-----------------------------------------------------------\n");   
+     printf("-----------------------------------------------------------\n");
 
      return 0;
 }
@@ -126,14 +177,14 @@ int com_version(char *para)
     }
 
     if(0 == read_version(fd,&ver,&sn))
-    {             
-        printf("-----------------------------------------------------------\n");            
+    {
+        printf("-----------------------------------------------------------\n");
         printf("version: %08x_V%x\n",sn,ver);
         printf("-----------------------------------------------------------\n");
     }
     else
     {
-        printf("-----------------------------------------------------------\n");            
+        printf("-----------------------------------------------------------\n");
         printf("The version number is invalid\n");
         printf("-----------------------------------------------------------\n");
     }
@@ -145,7 +196,7 @@ int com_dl(char *para)
    int len,n=0;
    char *p=para;
    u32 offset,val;
-   
+
    if(strcmp(para,"")==0)
     {
         printf(CLOUR_BEGIN,font_red);
@@ -164,7 +215,7 @@ int com_dl(char *para)
             n++;
         }
     }
-    
+
     len = strlen(para);
 
     if(len != n)
@@ -173,13 +224,13 @@ int com_dl(char *para)
         printf("offset is illegal!\n");
         printf(CLOUR_END);
         return -1;
-    } 
-   
+    }
+
    offset=strtoul(para,NULL,10);//将字符串转换成10进制无符号长整型数
 
    if(offset>=0 && offset<= eep_image_size/4-1)
     {
-        val=eepread32(fd,offset);   
+        val=eepread32(fd,offset);
         printf("-----------------------------------------------------------\n");
         printf("%08xh: %08x\n",offset*4,val);
         printf("-----------------------------------------------------------\n");
@@ -189,7 +240,7 @@ int com_dl(char *para)
         printf(CLOUR_BEGIN,font_red);
         printf("offset:[0,%d]\n",eep_image_size/4-1);
         printf(CLOUR_END);
-    }    
+    }
     return 0;
 }
 
@@ -200,7 +251,7 @@ int com_el(char *para)
     char *p=para;
     char offset_srt[128]={0},value_str[128]={0};
     u32 val,offset,data;
-   
+
    if(strcmp(para,"")==0)
     {
         printf(CLOUR_BEGIN,font_red);
@@ -232,7 +283,7 @@ int com_el(char *para)
         printf(CLOUR_END);
         return -1;
    }
-   
+
    for(j=0;i<len;i++,j++)//value
    {
         if(*p == ' ')
@@ -244,7 +295,7 @@ int com_el(char *para)
         value_str[j]=*p;
         p++;
    }
-   
+
    if(i!=len)
    {
         printf(CLOUR_BEGIN,font_red);
@@ -283,15 +334,15 @@ int com_el(char *para)
    }
    if(strlen(value_str)!=n)
    {
-        printf(CLOUR_BEGIN,font_red); 
+        printf(CLOUR_BEGIN,font_red);
         printf("Value is illegal!\n");
         printf(CLOUR_END);
         return -1;
    }
 
-   
+
    offset=strtoul(offset_srt,NULL,10);//将字符串转换成10进制无符号长整型数
-   data=strtoul(value_str,NULL,16);//将字符串转换成16进制无符号长整型数  
+   data=strtoul(value_str,NULL,16);//将字符串转换成16进制无符号长整型数
 
     if(offset>=0 && offset<= eep_image_size/4-1)
     {
@@ -303,7 +354,7 @@ int com_el(char *para)
     }
     else
     {
-        printf(CLOUR_BEGIN,font_red); 
+        printf(CLOUR_BEGIN,font_red);
         printf("offset:[0,%d]\n",eep_image_size/4-1);
         printf(CLOUR_END);
     }
@@ -315,7 +366,7 @@ int com_help(char *para)
     int i=0;
     if(strcmp(para,"")!=0)
     {
-        printf(CLOUR_BEGIN,font_red); 
+        printf(CLOUR_BEGIN,font_red);
         printf("help:the command takes no arguments\n");
         printf(CLOUR_END);
         return -1;
@@ -334,7 +385,7 @@ int com_quit(char *para)
 {
     if(strcmp(para,"")!=0)
     {
-        printf(CLOUR_BEGIN,font_red); 
+        printf(CLOUR_BEGIN,font_red);
         printf("quit:the command takes no arguments\n");
         printf(CLOUR_END);
         return -1;
@@ -357,10 +408,10 @@ char* dupstr(char *string)
 char* stripwhite (char *string)
 {
     register char *s, *t;
-    
+
     for (s = string; whitespace (*s); s++)
         ;
-    
+
     if (*s == 0)
         return (s);
 
@@ -376,7 +427,7 @@ char* stripwhite (char *string)
 command_t *find_command (char *name)
 {
     register int i;
-    
+
     for (i = 0; commands[i].name; i++)
         if (strcmp (name, commands[i].name) == 0)
             return (&commands[i]);
@@ -389,7 +440,7 @@ int execute_cmd (char *string)
     command_t *command;
     char *cmd;
     char *para;
-    
+
     i = 0;
     while (string[i] && whitespace (string[i]))
         i++;
@@ -404,7 +455,7 @@ int execute_cmd (char *string)
 
     command = find_command (cmd);
     if (!command)
-    {       
+    {
         printf(CLOUR_BEGIN,font_red);
         printf ("%s: No such command.\n", cmd);
         printf(CLOUR_END);
@@ -420,17 +471,17 @@ int execute_cmd (char *string)
     return ((*(command->func)) (para));
 }
 
-/* 
+/*
 * Generator function for command completion. STATE lets us know whether
 * to start from scratch; without any state (i.e. STATE == 0), then we
-* start at the top of the list. 
+* start at the top of the list.
 */
 char* command_generator (const char *text, int state)
 {
     static int list_index, len;
     char *name;
 
-    /* 
+    /*
     * If this is a new word to complete, initialize now. This includes
     * saving the length of TEXT for efficiency, and initializing the index
     * variable to 0.
@@ -445,7 +496,7 @@ char* command_generator (const char *text, int state)
     while (name = commands[list_index].name)
     {
          list_index++;
-    
+
          if (strncmp (name, text, len) == 0)
              return (dupstr(name));
     }
@@ -454,12 +505,12 @@ char* command_generator (const char *text, int state)
     return ((char *)NULL);
 }
 
-/* 
+/*
 * Attempt to complete on the contents of TEXT. START and END bound the
 * region of rl_line_buffer that contains the word to complete. TEXT is
 * the word to complete. We can use the entire contents of rl_line_buffer
 * in case we want to do some simple parsing. Return the array of matches,
-* or NULL if there aren't any. 
+* or NULL if there aren't any.
 */
 char** fileman_completion (const char *text, int start, int end)
 {
@@ -467,10 +518,10 @@ char** fileman_completion (const char *text, int start, int end)
 
     matches = (char **)NULL;
 
-    /* 
+    /*
     * If this word is at the start of the line, then it is a command
     * to complete. Otherwise it is the name of a file in the current
-    * directory. 
+    * directory.
     */
     if (start == 0)
         matches = rl_completion_matches (text, command_generator);
@@ -479,10 +530,10 @@ char** fileman_completion (const char *text, int start, int end)
 }
 
 
-/* 
+/*
 * Tell the GNU Readline library how to complete. We want to try to complete
 * on command names if this is the first word in the line, or on filenames
-* if not. 
+* if not.
 */
 void initialize_readline ()
 {
