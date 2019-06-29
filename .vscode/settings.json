@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "string.h": "c",
+        "fcntl.h": "c",
+        "readline.h": "c",
+        "history.h": "c",
+        "rlstdc.h": "c"
+    }
+}

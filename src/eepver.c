@@ -215,12 +215,12 @@ void show_eep_image_dump(int fd)
     int i=0;
     int raw_data1=0,raw_data2=0,raw_data3=0,raw_data4=0;
 
-    max_offset=get_eep_version_offset(fd)+1;
-    
-    for(offset=0;offset<=max_offset;)
+    //max_offset=get_eep_version_offset(fd)+1;
+    max_offset = fsize / 4 -1; 
+    for(offset = 0;offset <= max_offset;)
     {
         printf("%08xh:",offset*4);
-        for(i=0;i<4 && offset<=max_offset;i++,offset++)
+        for(i = 0;i < 4 && offset <= max_offset;i++,offset++)
         {
             val=eepread32(fd,offset);
             raw_data1 = val & 0xff;
@@ -232,10 +232,11 @@ void show_eep_image_dump(int fd)
         if((0 != is_data_size_multiple_of_four(fd)) && (offset > max_offset))//最后两个字节
         {
 			int eep_size;
-            eep_size = (eepread32(fd, 0) >> 16) + 10 + ver_len;
+            //eep_size = (eepread32(fd, 0) >> 16) + 10 + ver_len;
+            eep_size = fsize;
             if(eep_size % 16 == 2)
             {
-                printf("\n%08x:",offset*4);
+                printf("\n%08xh:",offset * 4);
             }
             val=eepread32(fd,offset);
             raw_data1 = val & 0xff;

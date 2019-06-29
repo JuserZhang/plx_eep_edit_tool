@@ -4,7 +4,7 @@
 #define u32 unsigned int
 #define u64 unsigned long
 
-extern u32 eep_image_size;
+extern u32 eep_image_size, fsize;
 extern int fd;
 
 typedef struct{
@@ -14,7 +14,8 @@ typedef struct{
     char *doc_desc;
 }command_t;
 
-int com_swc(char *para);
+//command
+int com_swc(char *para);//save without crc
 int com_dump(char *para);
 int com_modver(char *para);
 int com_version(char *para);

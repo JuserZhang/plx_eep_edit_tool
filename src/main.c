@@ -25,7 +25,7 @@
 #include "command.h"
 #include "clour.h"
 
-u32 eep_image_size=0;
+u32 eep_image_size=0,fsize;
 int fd,ver_len = 6;//默认是 2字节ver + 4字节sn
 
 void show_logo()
@@ -56,7 +56,7 @@ int main (int argc, char **argv)
 
  //   int len=0;
 
-    u32 val,fsize;
+    u32 val;
 
     if(argc!=2)
     {
@@ -141,6 +141,7 @@ int main (int argc, char **argv)
             goto err;
         }
     }
+    
     printf(CLOUR_END);
     initialize_readline();    /* Bind our completer. */
     read_history(NULL); //从指定的文件中读取历史记录,如果参数为NULL默认的文件是：~/.history

@@ -41,7 +41,7 @@ int com_dump(char *para)
 int com_swc(char *para)
 {
     int fd_tmp, ret, i, quotient = 0, residue = 0;
-    u32 eep_size,buff, progress = 0;
+    u32 eep_size,buff;
     char dir_buf[256];
     char fname[128];
 
@@ -60,21 +60,24 @@ int com_swc(char *para)
 	sprintf(dir_buf,"%s/%s",dir_buf,fname);
 
 	fd_tmp = open(dir_buf , O_RDWR|O_NDELAY|O_CREAT|O_EXCL);
-	if(fd_tmp < 0) {
+	if(fd_tmp < 0) 
+    {
 		printf("File already exist, choose another\n");
 		return 1;
 	}
-    eep_size = (eepread32(fd, 0) >> 16) + 4;
+    eep_size = (eepread32(fd, 0) >> 16) + 4;//CRC之前的所有数据
 
-    quotient = eep_size/4;
-	residue  = eep_size%4;
+    quotient = eep_size / 4;
+	residue  = eep_size % 4;
 
-    for(i = 0; i < quotient;i++)
+    for(i = 0; i < quotient; i++)
     {
 		buff = eepread32(fd, i);
 		ret = write(fd_tmp, &buff, 0x4);
 		if(4 != ret)
+        {
 			printf("Write file failed-%d\n",i);
+        }
 	}
 
     if(residue)
@@ -82,11 +85,15 @@ int com_swc(char *para)
 		buff = eepread32(fd, i);
 		ret = write(fd_tmp, &buff, 0x2);
 		if(2 != ret)
+        {
 			printf("Write file failed-%d\n",i);
+        }
 	}
     printf("-----------------------------------------------------------\n");
-    printf("Save eeprom to %s(%dB) successful\n",dir_buf,eep_size);
+    printf("Save eeprom without crc to %s(%dB) successful\n",dir_buf,eep_size);
     printf("-----------------------------------------------------------\n");
+    close(fd_tmp);
+    return 0;
 }
 
 int com_modver(char *para)
@@ -159,7 +166,7 @@ int com_modver(char *para)
      printf("Modified version success!\n");
      printf("Current version:%s_V%s\n",serial_number,version);
      printf("-----------------------------------------------------------\n");
-
+     fsize = eep_image_size;
      return 0;
 }
 

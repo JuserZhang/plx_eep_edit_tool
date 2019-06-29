@@ -5,7 +5,7 @@
 #define u32 unsigned int
 #define u64 unsigned long
 
-extern u32 eep_image_size;
+extern u32 eep_image_size,fsize;
 extern int ver_len;
 
 u32 eepread32(int fd,u32 offset);
