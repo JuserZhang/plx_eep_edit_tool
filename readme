@@ -24,3 +24,8 @@ quit            退出程序
 
 【批量管理】
 scripts目录下包含了一系列shell脚本，方便快速对eeprom image文件进行批量操作。
+
+---------------------------------
+该工具编译和运行依赖于readline库文件，若无法编译说明缺少readline头文件或者lib库，解决方法如下
+1. 把readline目录包含里面的文件拷贝到/user/include。
+2. 把lib64下文件拷贝到/user/lib64下，若无lib64目录拷贝到/user/lib目录下。
